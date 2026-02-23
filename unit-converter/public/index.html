@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unit Converter</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="card">
+    <h1>⚖️ Unit Converter</h1>
+
+    <div class="form-group">
+      <label>Category</label>
+      <select id="category" onchange="updateUnits()">
+        <option value="length">Length</option>
+        <option value="weight">Weight</option>
+        <option value="temperature">Temperature</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Convert</label>
+      <select id="unit"></select>
+    </div>
+
+    <div class="form-group">
+      <label>Value</label>
+      <input type="number" id="value" placeholder="Enter value..." />
+    </div>
+
+    <button onclick="convert()">Convert</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const units = {
+      length: [
+        { label: "km → miles",   value: "km_to_miles" },
+        { label: "miles → km",   value: "miles_to_km" },
+        { label: "cm → inches",  value: "cm_to_inches" },
+        { label: "inches → cm",  value: "inches_to_cm" },
+      ],
+      weight: [
+        { label: "kg → pounds",      value: "kg_to_pounds" },
+        { label: "pounds → kg",      value: "pounds_to_kg" },
+        { label: "grams → ounces",   value: "grams_to_ounces" },
+        { label: "ounces → grams",   value: "ounces_to_grams" },
+      ],
+      temperature: [
+        { label: "Celsius → Fahrenheit", value: "c_to_f" },
+        { label: "Fahrenheit → Celsius", value: "f_to_c" },
+        { label: "Celsius → Kelvin",     value: "c_to_k" },
+        { label: "Kelvin → Celsius",     value: "k_to_c" },
+      ],
+    };
+
+    function updateUnits() {
+      const category = document.getElementById("category").value;
+      const unitSelect = document.getElementById("unit");
+      unitSelect.innerHTML = "";
+      units[category].forEach(u => {
+        const option = document.createElement("option");
+        option.value = u.value;
+        option.textContent = u.label;
+        unitSelect.appendChild(option);
+      });
+      document.getElementById("result").textContent = "";
+    }
+
+    async function convert() {
+      const category = document.getElementById("category").value;
+      const unit = document.getElementById("unit").value;
+      const value = document.getElementById("value").value;
+
+      if (!value) {
+        document.getElementById("result").textContent = "⚠️ Please enter a value!";
+        document.getElementById("result").className = "result error";
+        return;
+      }
+
+      const response = await fetch("/api/convert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, unit, value }),
+      });
+
+      const data = await response.json();
+
+      const resultBox = document.getElementById("result");
+      if (data.result !== undefined) {
+        const label = document.getElementById("unit").options[document.getElementById("unit").selectedIndex].text;
+        resultBox.textContent = `✅ ${value} ${label} = ${data.result}`;
+        resultBox.className = "result success";
+      } else {
+        resultBox.textContent = "❌ " + data.error;
+        resultBox.className = "result error";
+      }
+    }
+
+    // init on load
+    updateUnits();
+  </script>
+
+</body>
+</html>
