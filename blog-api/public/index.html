@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        Blog API Test
+    </head>
+    <body>
+        <h2>Create Post</h2>
+        <input id = "title" placeholder="title">
+        <input id = "content" placeholder="content">
+        <button type="button" onclick="createPost()">Add</button>
+        
+        <h2>Posts</h2>
+        <ul id = "posts"></ul>
+        <script>
+            async function loadPosts() {
+                const res = await fetch("http://localhost:3000/api/posts");
+                const data = await res.json();
+                console.log("welcome ot error");
+                const list = document.getElementById("posts");
+                list.innerHTML="";
+                data.forEach(p=>{
+                    const li = document.createElement("li");
+                    li.innerText=p.title+"-"+p.content;
+                    list.appendChild(li);
+                });
+            }
+            async function updatePost(id){
+
+                const title = prompt("New title");
+                const content = prompt("New content");
+
+                await fetch("/api/posts/"+id,{
+                method:"PUT",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({title,content})
+                });
+
+                loadPosts();
+
+                }
+            async function createPost() {
+                console.log("wcm");
+                const title = document.getElementById("title").value;
+                const content = document.getElementById("content").value;
+
+                await fetch("/api/posts",{
+                    method:"POST",
+                    headers: {"Content-Type":"application/json"},
+                    body:JSON.stringify({title,content})
+                });
+                loadPosts();
+            }
+            loadPosts();
+        </script>
+    </body>
+</html>
